@@ -18,7 +18,7 @@ interface Photo {
   thumbnailUrl: string;
 }
 
-const CustomerDetailsPortal: React.FC = () => {
+const App: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -95,4 +95,4 @@ const CustomerDetailsPortal: React.FC = () => {
   );
 };
 
-export default CustomerDetailsPortal;
+export default App;
