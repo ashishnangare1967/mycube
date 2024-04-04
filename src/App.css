@@ -39,6 +39,7 @@ body {
   flex: 2;
   border-right: 2px solid #ccc;
   padding: 10px;
+  text-align: center;
 }
 
 .photo-grid {
