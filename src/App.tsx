@@ -1,95 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-
+import React, { useState } from 'react';
 import './App.css';
-
-interface Customer {
-  id: number;
-  name: string;
-  title: string;
-  address: string;
-}
-
-interface Photo {
-  albumId: number;
-  id: number;
-  title: string;
-  url: string;
-  thumbnailUrl: string;
-}
+import { useAxios } from './customhook/Ax';
+import CustomerList from './component/CustomerList';
+import CustomerDetails from './component/CustomerDetails';
 
 const App: React.FC = () => {
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const { data: customers, loading: customersLoading } = useAxios('https://jsoncube.onrender.com/data', []);
+  const { data: photos, loading: photosLoading } = useAxios('https://jsonplaceholder.typicode.com/photos?_limit=9', []);
+
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
-  const [photos, setPhotos] = useState<Photo[]>([]);
-
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await axios.get('https://jsoncube.onrender.com/data');
-        setCustomers(response.data);
-      } catch (error) {
-        console.error('Error fetching customers:', error);
-      }
-    };
-
-    const fetchPhotos = async () => {
-      try {
-        const response = await axios.get('https://jsonplaceholder.typicode.com/photos');
-        setPhotos(response.data.slice(0, 9));
-      } catch (error) {
-        console.error('Error fetching photos:', error);
-      }
-    };
-
-    fetchCustomers();
-    fetchPhotos();
-
-    // Fetch photos every 10 seconds
-    const interval = setInterval(fetchPhotos, 10000);
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
-  }, []);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleCustomerClick = (customerId: number) => {
     setSelectedCustomerId(customerId);
   };
 
+  // Checking if any loading is still in progress
+  if (customersLoading || photosLoading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div style={{ fontSize: '24px', fontWeight: 'bold' }}>Loading...</div>
+    </div>
+  }
+
+  // Once loading is finished, render the main content
   return (
-    <div id='app'>
-      <h1 className='heading'>Customer Details Portal</h1>
+    <div id="app">
+      <h1 className="heading">Customer Details Portal</h1>
       <div className="customer-details-portal">
-        <div className="customer-list">
-          {customers.map((customer) => (
-            <div
-              key={customer.id}
-              className={`customer-card ${selectedCustomerId === customer.id ? 'selected' : ''}`}
-              onClick={() => handleCustomerClick(customer.id)}
-            >
-              <h3>{customer.name}</h3>
-              <p>{customer.title}</p>
-            </div>
-          ))}
-        </div>
-          <div className="customer-details">
-          <div className=''>
-            {selectedCustomerId !== null && (
-              <>
-                <h2>{customers.find((customer) => customer.id === selectedCustomerId)?.name}</h2>
-                <p>{customers.find((customer) => customer.id === selectedCustomerId)?.title}</p>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Obcaecati aliquid, sequi nulla quidem minus sapiente, quo quas, quibusdam ipsum molestiae possimus doloribus non. Repudiandae laudantium exercitationem, eligendi vitae vero consequatur.{customers.find((customer) => customer.id === selectedCustomerId)?.address}</p>
-                <div className="photo-grid">
-                  {photos.map((photo) => (
-
-                    <img key={photo.id} src={photo.thumbnailUrl} alt={photo.title} />
-
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        <CustomerList customers={customers} selectedCustomerId={selectedCustomerId} handleCustomerClick={handleCustomerClick} />
+        <CustomerDetails
+          customer={customers.find((customer: { id: number }) => customer.id === selectedCustomerId)}
+          photos={photos}
+        />
       </div>
     </div>
   );
